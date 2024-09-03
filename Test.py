@@ -1,9 +1,15 @@
 import sounddevice as sd
 import librosa
 import numpy as np
+from os import listdir
+from os.path import isfile, join
 from sklearn.svm import OneClassSVM
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.ensemble import RandomForestClassifier
 
 # Function to extract features from audio data
 def extract_enhanced_features(audio, sr):
@@ -66,26 +72,62 @@ def predict_anomaly_on_live_audio(model):
 # Load your audio files and labels here
 # For simplicity, here we are assuming the model is already trained and loaded
 
-audio_files = [
-    './NewAudio/1-speed.wav',
-    './NewAudio/test-case.wav'
-]
+abnormal_dataset_path = "dataset/Abnormal"
+abnormal_files = [join(abnormal_dataset_path, f) for f 
+                        in listdir(abnormal_dataset_path) 
+                        if isfile(join(abnormal_dataset_path, f))]
 
-for audio_file in audio_files:
-    y,sr = librosa.load(audio_file)
-    plt.figure()
-    plt.plot(y)
-    plt.show()
+highspeed_dataset_path = "dataset/HighSpeed"
+highspeed_files = [join(highspeed_dataset_path, f) for f 
+                        in listdir(highspeed_dataset_path) 
+                        if isfile(join(highspeed_dataset_path, f))]
 
-labels = [0, 1]  # 0 = Normal, 1 = Abnormal
-features = [extract_enhanced_features(librosa.load(f, sr=16000)[0], 16000) for f in audio_files]
+lowspeed_dataset_path = "dataset/lowSpeed"
+lowspeed_files = [join(lowspeed_dataset_path, f) for f 
+                        in listdir(lowspeed_dataset_path) 
+                        if isfile(join(lowspeed_dataset_path, f))]
+
+general_labels = ["abnormal","highspeed","lowspeed"]
+
+i = 0
+features = []
+labels = []
+for audio_path in [abnormal_files,highspeed_files,lowspeed_files]:
+    label = general_labels[i]
+    show_first = True
+    for audio_file in audio_path:
+        audio,sr = librosa.load(audio_file)
+        labels.append(label)
+        features.append(extract_enhanced_features(librosa.load(audio_file, sr=16000)[0], 16000))
+        if show_first:
+            plt.figure()
+            plt.plot(audio)
+            plt.show()
+            show_first = False
+    i += 1
+
 X = np.array(features)
+print(X.shape)
+y = labels
+print(len(y))
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-model = OneClassSVM(kernel='rbf', gamma='auto', nu=0.01)
+#model = OneClassSVM(kernel='rbf', gamma='auto', nu=0.01)
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+#scaler = StandardScaler()
+#X_scaled = scaler.fit_transform(X_train)
+#y_train_preds = model.fit_predict(X_scaled)
+model.fit(X_train, y_train)
+#print("Train metrics")
+#print(classification_report(y_train, y_train_preds))
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-model.fit(X_scaled)
+#X_scaled_test = scaler.transform(X_test)
+y_test_preds = model.predict(X_test)
+print("Test metrics")
+print(classification_report(y_test, y_test_preds))
+print(confusion_matrix(y_test, y_test_preds, 
+                    labels=["abnormal","highspeed","lowspeed"]))
+
 # For live audio predictions, use the same enhanced feature extraction
 
 # Continuously listen, visualize, and predict
