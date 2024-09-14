@@ -95,6 +95,6 @@ def predict_live_audio(duration):
 
 try:
     while True:
-        predict_live_audio(duration=5)
+        predict_live_audio(duration=15)
 except KeyboardInterrupt:
     print("Stopped by user.")
