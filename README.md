@@ -8,11 +8,10 @@ The proposed methodology integrates edge intelligence with predictive maintenanc
 ![image](https://github.com/user-attachments/assets/cabeef9d-1d3f-462f-a60e-9023d7dbd4f4)
 
 ## Results
-
-![image](https://github.com/user-attachments/assets/76bbeea8-e69e-4ce2-a463-c82b83717108)
-
 The anomaly detection algorithm, Audio signals are captured from the microphone and classified by a deep learning model into two categories: normal behavior (high speed) and abnormal behavior (low speed). In conjunction with temperature readings, a decision-making algorithm further categorizes the signals into four conditions:
 - normal behavior (Green): high speed and temperature below threshold (T max).
 - abnormal temperature (Yellow): high speed and temperature above threshold (T max).
 - abnormal speed (Blue): low speed and temperature below threshold (T max).
 - abnormal behavior (Red): low speed and temperature above threshold (T max).
+  
+![image](https://github.com/user-attachments/assets/76bbeea8-e69e-4ce2-a463-c82b83717108)
